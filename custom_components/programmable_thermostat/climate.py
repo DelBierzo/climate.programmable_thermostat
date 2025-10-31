@@ -336,13 +336,16 @@ class ProgrammableThermostat(ClimateEntity, RestoreEntity):
     async def _async_target_changed(self, event):
         """Handle temperature changes in the program."""
         new_state = event.data.get("new_state")
-        if new_state is None:
+        if new_state is None:           
+            if new_state == 'unknown':
+                await asyncio.sleep(15)
+        else:
             return
-        self._restore_temp = float(new_state.state)
-        if self._hvac_mode == HVACMode.HEAT_COOL:
-            self._async_restore_program_temp()
-        await self.control_system_mode()
-        self.async_write_ha_state()
+            self._restore_temp = float(new_state.state)
+            if self._hvac_mode == HVACMode.HEAT_COOL:
+                self._async_restore_program_temp()
+            await self.control_system_mode()
+            self.async_write_ha_state()
 
     async def _async_control_thermo(self, mode=None):
         """Check if we need to turn heating on or off."""
